@@ -3,7 +3,6 @@ Routes and views for the bottle application.
 """
 
 from bottle import get, route, hook, response
-import sqlite3
 import os
 
 @hook('after_request')
