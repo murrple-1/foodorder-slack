@@ -2,5 +2,8 @@ import os
 
 API_TOKEN = os.environ.get('SLACKBOT_API_TOKEN') or '<your-api-token>'
 
-DEFAULT_REPLY = 'Sorry but I didn\'t understand you'
+ERRORS_TO = os.environ.get('SLACKBOT_ERRORS_TO') or '<your-slackbot-admin>'
 
+PLUGINS = [
+    'foodbot'
+]
