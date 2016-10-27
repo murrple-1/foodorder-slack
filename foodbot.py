@@ -1,6 +1,13 @@
 from slackbot.bot import respond_to, listen_to, default_reply
 
-@respond_to('^:todaysmenu (.*)')
+# Regex Debugger: https://regex101.com/r/VrfsK0/1
+# URL Character Reference: http://stackoverflow.com/questions/1856785/characters-allowed-in-a-url
+@respond_to('^:addmenu \'([A-Za-z0-9 \\!\\.]+)\' ([]+)$')
+@respond_to('^:addmenu () () (true|false)$')
+def add_menu(message, menu_name, menu_url, is_default='false'):
+    message.reply('Menu Added')
+
+@respond_to('^:todaysmenu (.*)$')
 def set_todays_menu(message, todays_menu_url):
     message.reply('I\'ve set today\'s menu to \'{0}\''.format(todays_menu_url))
 

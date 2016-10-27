@@ -10,4 +10,4 @@ CREATE TABLE "orders" (
 	`ordered_by` TEXT NOT NULL,
 	`order_text` TEXT NOT NULL
 );
-CREATE INDEX "orders_ordered_at_idx" ON "orders" (`ordered_at`);
+CREATE INDEX "idx_orders_ordered_at" ON "orders" (`ordered_at`);
