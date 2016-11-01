@@ -92,9 +92,6 @@ def add_today_menu(message, menu_name, menu_url):
             conn.commit()
 
             message.reply('Added \'{0}\' to today\'s menu'.format(menu_name))
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -130,9 +127,6 @@ def remove_today_menu(message, menu_name):
             message.reply('Removed menu item')
         else:
             message.reply('No menu item found, so nothing removed')
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -177,9 +171,6 @@ def add_default_menu(message, menu_name, menu_url):
             conn.commit()
 
             message.reply('Added \'{0}\' to default menu'.format(menu_name))
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -214,9 +205,6 @@ def remove_default_menu(message, menu_name):
             message.reply('Removed default menu item')
         else:
             message.reply('No default menu item found, so nothing removed')
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -241,9 +229,6 @@ def reset_todays_menu(message):
         conn.commit()
 
         message.reply('Today\'s menu has been reset')
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -282,9 +267,6 @@ def todays_menu_respond(message):
             message.reply(reply)
         else:
             message.reply('No menu has been set')
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -330,9 +312,6 @@ def set_order(message, order):
             conn.commit()
 
             message.reply('Added order')
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
@@ -371,9 +350,6 @@ def todays_orders(message):
             message.reply(reply)
         else:
             message.reply('No orders put in yet today')
-    except sqlite3.OperationalError as e:
-        # TODO
-        raise e
     finally:
         if conn is not None:
             conn.close()
