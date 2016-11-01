@@ -133,6 +133,7 @@ def remove_today_menu(message, menu_name):
 
 @respond_to('^:adddefaultmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
 def add_default_menu(message, menu_name, menu_url):
+    dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
 
     try:
@@ -177,6 +178,7 @@ def add_default_menu(message, menu_name, menu_url):
 
 @respond_to('^:removedefaultmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
 def remove_default_menu(message, menu_name):
+    dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
 
     try:
@@ -318,6 +320,7 @@ def set_order(message, order):
 
 @respond_to('^:clearmyorder$')
 def clear_order(message):
+    dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
 
     try:
