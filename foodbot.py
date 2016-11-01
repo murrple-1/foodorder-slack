@@ -36,14 +36,30 @@ def _slack_regex_group(regex):
 def _slack_url_regex_group(url_regex):
     return '<({0})>'.format(url_regex)
 
+def _remove_old_entries(cur, dayStart):
+    cur.execute(
+        """
+        DELETE FROM \"daily_menus\"
+        WHERE `date` < :day_start
+        """, { 'day_start': calendar.timegm(dayStart.utctimetuple()) }
+    )
+
+    cur.execute(
+        """
+        DELETE FROM \"orders\"
+        WHERE `ordered_at` < :day_start
+        """, { 'day_start': calendar.timegm(dayStart.utctimetuple()) }
+    )
+
 @respond_to('^:addtodaysmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
 def add_today_menu(message, menu_name, menu_url):
     dayStart, dayEnd = _dayInterval()
-
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
 
         exists = cur.execute(
             """
@@ -86,11 +102,12 @@ def add_today_menu(message, menu_name, menu_url):
 @respond_to('^:removetodaysmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
 def remove_today_menu(message, menu_name):
     dayStart, dayEnd = _dayInterval()
-
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
 
         exists = cur.execute(
             """
@@ -126,6 +143,8 @@ def add_default_menu(message, menu_name, menu_url):
 
     try:
         cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
 
         exists = cur.execute(
             """
@@ -172,6 +191,8 @@ def remove_default_menu(message, menu_name):
     try:
         cur = conn.cursor()
 
+        _remove_old_entries(cur, dayStart)
+
         exists = cur.execute(
             """
             SELECT dfm.`id` FROM \"daily_menus\" AS dfm
@@ -207,6 +228,8 @@ def reset_todays_menu(message):
 
     try:
         cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
 
         cur.execute(
             """
@@ -273,6 +296,8 @@ def set_order(message, order):
 
     try:
         cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
 
         oldOrder = cur.execute(
             """
