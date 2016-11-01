@@ -1,36 +1,357 @@
 from slackbot.bot import respond_to, listen_to, default_reply
 
-# Regex Debugger: https://regex101.com/r/VrfsK0/1
-# URL Character Reference: http://stackoverflow.com/questions/1856785/characters-allowed-in-a-url
-@respond_to('^:addmenu \'([A-Za-z0-9 \\!\\.]+)\' ([]+)$')
-@respond_to('^:addmenu () () (true|false)$')
-def add_menu(message, menu_name, menu_url, is_default='false'):
-    message.reply('Menu Added')
+import sqlite3
+import datetime
+import calendar
+import re
 
-@respond_to('^:todaysmenu (.*)$')
-def set_todays_menu(message, todays_menu_url):
-    message.reply('I\'ve set today\'s menu to \'{0}\''.format(todays_menu_url))
+def _dayInterval(date=None):
+    if date is None:
+        date = datetime.date.today()
 
-@listen_to('^:todaysmenu$')
-def todays_menu_listen(message):
-    todaysMenu = _todays_menu()
-    message.send(todaysMenu)
+    start = datetime.datetime(date.year, date.month, date.day, 0, 0, 0, 0)
+    end = datetime.datetime(date.year, date.month, date.day, 23, 59, 59, 999999)
+    return start, end
+
+_MENU_NAME_REGEX = '[A-Za-z0-9 !\\.\\-\\\'&]+'
+_MENU_URL_REGEX = (
+    # protocol identifier
+    "(?:https?://)"
+    # host name
+    "(?:(?:[a-z0-9]-?)*[a-z0-9]+)"
+    # domain name
+    "(?:\.(?:[a-z0-9]-?)*[a-z0-9]+)*"
+    # TLD identifier
+    "(?:\.(?:[a-z]{2,}))"
+    # port number
+    "(?::\d{2,5})?"
+    # resource path
+    "(?:/\\S*)?"
+)
+_MY_ORDER_REGEX = '[A-Za-z0-9 #]+'
+
+def _slack_regex_group(regex):
+    return '({0})'.format(regex)
+
+def _slack_url_regex_group(url_regex):
+    return '<({0})>'.format(url_regex)
+
+@respond_to('^:addtodaysmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
+def add_today_menu(message, menu_name, menu_url):
+    dayStart, dayEnd = _dayInterval()
+
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        exists = cur.execute(
+            """
+            SELECT dlm.`id` FROM \"daily_menus\" AS dlm
+            WHERE dlm.`name` = :menu_name AND (dlm.`date` >= :day_start AND dlm.`date` <= :day_end)
+            LIMIT 1
+            """, { 'menu_name': menu_name, 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()) }
+        ).fetchone()
+
+        if exists:
+            cur.execute(
+                """
+                UPDATE \"daily_menus\"
+                SET `url` = :url
+                WHERE `id` = :id
+                """, { 'url': menu_url, 'id': exists[0] }
+            )
+
+            conn.commit()
+
+            message.reply('Updated today\'s menu')
+        else:
+            cur.execute(
+                """
+                INSERT INTO \"daily_menus\" (`name`, `url`, `date`) VALUES
+                (:name, :url, :date)
+                """, { 'name': menu_name, 'url': menu_url, 'date': calendar.timegm(datetime.datetime.now().utctimetuple()) }
+            )
+
+            conn.commit()
+
+            message.reply('Added \'{0}\' to today\'s menu'.format(menu_name))
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+
+@respond_to('^:removetodaysmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
+def remove_today_menu(message, menu_name):
+    dayStart, dayEnd = _dayInterval()
+
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        exists = cur.execute(
+            """
+            SELECT dlm.`id` FROM \"daily_menus\" AS dlm
+            WHERE dlm.`name` = :menu_name AND (dlm.`date` >= :day_start AND dlm.`date` <= :day_end)
+            LIMIT 1
+            """, { 'menu_name': menu_name, 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()) }
+        ).fetchone()
+
+        if exists:
+            cur.execute(
+                """
+                DELETE FROM \"daily_menus\"
+                WHERE `id` = :id
+                """, { 'id': exists[0] }
+            )
+
+            conn.commit()
+
+            message.reply('Removed menu item')
+        else:
+            message.reply('No menu item found, so nothing removed')
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+
+@respond_to('^:adddefaultmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
+def add_default_menu(message, menu_name, menu_url):
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        exists = cur.execute(
+            """
+            SELECT dfm.`id` FROM \"default_menus\" AS dfm
+            WHERE dfm.`name` = :menu_name
+            LIMIT 1
+            """
+        ).fetchone()
+
+        if exists:
+            cur.execute(
+                """
+                UPDATE \"default_menus\"
+                SET `url` = :url
+                WHERE `id` = :id
+                """, { 'url': menu_url, 'id': exists[0] }
+            )
+
+            conn.commit()
+
+            message.reply('Updated default menu')
+        else:
+            cur.execute(
+                """
+                INSERT \"default_menus\" (`name`, `url`) VALUES
+                (:name, :url)
+                """, { 'name': menu_name, 'url': menu_url}
+            )
+
+            conn.commit()
+
+            message.reply('Added \'{0}\' to default menu'.format(menu_name))
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+
+@respond_to('^:removedefaultmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
+def remove_default_menu(message, menu_name):
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        exists = cur.execute(
+            """
+            SELECT dfm.`id` FROM \"daily_menus\" AS dfm
+            WHERE dfm.`name` = :menu_name
+            LIMIT 1
+            """, { 'menu_name': menu_name }
+        ).fetchone()
+
+        if exists:
+            cur.execute(
+                """
+                DELETE FROM \"default_menus\"
+                WHERE `id` = :id
+                """, { 'id': exists[0] }
+            )
+
+            conn.commit()
+
+            message.reply('Removed default menu item')
+        else:
+            message.reply('No default menu item found, so nothing removed')
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+
+@respond_to('^:resettodaysmenu$')
+def reset_todays_menu(message):
+    dayStart, dayEnd = _dayInterval()
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            DELETE FROM \"daily_menus\"
+            WHERE dlm.`date` >= :day_start AND dlm.`date` <= :day_end
+            """, { 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()) }
+        )
+
+        conn.commit()
+
+        message.reply('Today\'s menu has been reset')
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
 
 @respond_to('^:todaysmenu$')
 def todays_menu_respond(message):
-    todaysMenu = _todays_menu()
-    message.reply(todaysMenu)
+    dayStart, dayEnd = _dayInterval()
+    conn = sqlite3.connect('data.db')
 
-def _todays_menu():
-    return 'Today\'s menu is: {0}'.format('McDonald\'s')
+    try:
+        cur = conn.cursor()
 
-@respond_to('^:myorder (.*)')
+        menus = None
+
+        menus = cur.execute(
+            """
+            SELECT dlm.`name`, dlm.`url` FROM \"daily_menus\" AS dlm
+            WHERE dlm.`date` >= :day_start AND dlm.`date` <= :day_end
+            """, { 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()) }
+        ).fetchall()
+
+        if len(menus) < 1:
+            menus = cur.execute(
+                """
+                SELECT dfm.`name`, dfm.`url` FROM \"default_menus\" AS dfm
+                """
+            ).fetchall()
+
+        if len(menus) > 0:
+            replyLines = []
+            for menu in menus:
+                replyLines.append(u'\u2022 {0} - {1}'.format(menu[0], menu[1]))
+
+            reply = u'\n'.join(replyLines)
+
+            message.reply(reply)
+        else:
+            message.reply('No menu has been set')
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
+
+@respond_to('^:myorder \'{0}\''.format(_slack_regex_group(_MY_ORDER_REGEX)))
 def set_order(message, order):
-    message.reply('Thank you for your order')
+    dayStart, dayEnd = _dayInterval()
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        oldOrder = cur.execute(
+            """
+            SELECT o.`id` FROM \"orders\" AS o
+            WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end) AND o.`ordered_by` = :ordered_by
+            LIMIT 1
+            """, { 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()), 'ordered_by': message.body['user'] }
+        ).fetchone()
+
+        if oldOrder:
+            cur.execute(
+                """
+                UPDATE \"orders\"
+                SET `text` = :text
+                WHERE `id` = :id
+                """, { 'text': order, 'id': oldOrder[0] }
+            )
+
+            conn.commit()
+
+            message.reply('Order updated')
+        else:
+            cur.execute(
+                """
+                INSERT INTO \"orders\" (`ordered_at`, `ordered_by`, `text`) VALUES
+                (:ordered_at, :ordered_by, :text)
+                """, { 'ordered_at': calendar.timegm(datetime.datetime.now().utctimetuple()), 'ordered_by': message.body['user'], 'text': order }
+            )
+
+            conn.commit()
+
+            message.reply('Added order')
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
 
 @respond_to('^:todaysorders$')
 def todays_orders(message):
-    message.reply('I ordered the fish')
+    dayStart, dayEnd = _dayInterval()
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        todaysOrders = cur.execute(
+            """
+            SELECT o.`ordered_by`, o.`text`
+            FROM \"orders\" AS o
+            WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end)
+            """, { 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()) }
+        ).fetchall()
+
+        def _userid_to_username(userid, slackclient):
+            from six import iteritems
+
+            for _userid, user in iteritems(slackclient.users):
+                if userid == _userid:
+                    return user['name']
+
+        if len(todaysOrders) > 0:
+            replyLines = []
+            for todaysOrder in todaysOrders:
+                username = _userid_to_username(todaysOrder[0], message._client)
+                replyLines.append(u'\u2022 @{0} - {1}'.format(username, todaysOrder[1]))
+
+            reply = u'\n'.join(replyLines)
+
+            message.reply(reply)
+        else:
+            message.reply('No orders put in yet today')
+    except sqlite3.OperationalError as e:
+        # TODO
+        raise e
+    finally:
+        if conn is not None:
+            conn.close()
 
 @respond_to('^:help$')
 def help(message):
@@ -38,10 +359,14 @@ def help(message):
 List of available commands:
 
 \u2022 `:help` print this help message
-\u2022 `:todaysmenu [MENU_URL]` set today's menu
-\u2022 `:todaysmenu` get today\'s available menus
-\u2022 `:myorder [YOUR_ORDER]` set your order for the day
-\u2022 `:todaysorders` get list of today's orders
+\u2022 `:todaysmenu` get today's menu
+\u2022 `:todaysorders` get today\'s orders
+\u2022 `:myorder '[YOUR ORDER]'` set your order for the day
+\u2022 `:addtodaysmenu '[MENU NAME]' '[MENU URL]'` add a menu to today's menu
+\u2022 `:removetodaysmenu '[MENU NAME]'` remove a menu from today's menu
+\u2022 `:resettodaysmenu` get list of today's orders
+\u2022 `:adddefaultmenu '[MENU NAME]' '[MENU URL]'` add a menu to the default menu
+\u2022 `:removedefaultmenu '[MENU NAME]'` remove a menu from the default menu
 """
     message.reply(helpText)
 
