@@ -316,6 +316,40 @@ def set_order(message, order):
         if conn is not None:
             conn.close()
 
+@respond_to('^:clearmyorder$')
+def clear_order(message):
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
+
+        oldOrder = cur.execute(
+            """
+            SELECT o.`id` FROM \"orders\" AS o
+            WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end) AND o.`ordered_by` = :ordered_by
+            LIMIT 1
+            """, { 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()), 'ordered_by': message.body['user'] }
+        ).fetchone()
+
+        if oldOrder:
+            cur.execute(
+                """
+                DELETE FROM \"orders\"
+                WHERE `id` = :id
+                """, { 'id': oldOrder[0] }
+            )
+
+            conn.commit()
+
+            message.reply('Today\'s order cleared')
+        else:
+            message.reply('No order yet today, nothing removed')
+    finally:
+        if conn is not None:
+            conn.close()
+
 @respond_to('^:todaysorders$')
 def todays_orders(message):
     dayStart, dayEnd = _dayInterval()
@@ -363,6 +397,7 @@ List of available commands:
 \u2022 `:todaysmenu` get today's menu
 \u2022 `:todaysorders` get today\'s orders
 \u2022 `:myorder '[YOUR ORDER]'` set your order for the day
+\u2022 `:clearmyorder` unset your order for the day
 \u2022 `:addtodaysmenu '[MENU NAME]' '[MENU URL]'` add a menu to today's menu
 \u2022 `:removetodaysmenu '[MENU NAME]'` remove a menu from today's menu
 \u2022 `:resettodaysmenu` get list of today's orders
