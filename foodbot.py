@@ -146,7 +146,7 @@ def add_default_menu(message, menu_name, menu_url):
             SELECT dfm.`id` FROM \"default_menus\" AS dfm
             WHERE dfm.`name` = :menu_name
             LIMIT 1
-            """
+            """, { 'menu_name': menu_name }
         ).fetchone()
 
         if exists:
