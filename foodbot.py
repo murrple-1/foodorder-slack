@@ -403,7 +403,7 @@ List of available commands:
 \u2022 `:clearmyorder` unset your order for the day
 \u2022 `:addtodaysmenu '[MENU NAME]' '[MENU URL]'` add a menu to today's menu
 \u2022 `:removetodaysmenu '[MENU NAME]'` remove a menu from today's menu
-\u2022 `:resettodaysmenu` get list of today's orders
+\u2022 `:resettodaysmenu` clear today's custom menu, returning to the default state
 \u2022 `:adddefaultmenu '[MENU NAME]' '[MENU URL]'` add a menu to the default menu
 \u2022 `:removedefaultmenu '[MENU NAME]'` remove a menu from the default menu
 """
