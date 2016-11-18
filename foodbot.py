@@ -164,7 +164,7 @@ def add_default_menu(message, menu_name, menu_url):
         else:
             cur.execute(
                 """
-                INSERT \"default_menus\" (`name`, `url`) VALUES
+                INSERT INTO \"default_menus\" (`name`, `url`) VALUES
                 (:name, :url)
                 """, { 'name': menu_name, 'url': menu_url}
             )
