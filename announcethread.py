@@ -10,6 +10,7 @@ import slackbot_settings as settings
 import slacker
 
 from log import logger
+from cron import CronScheduleTime, parseCronSchedule
 
 def _run_thread(slackclient, cron_schedule_times, channel_ids, messages):
     while True:
@@ -58,4 +59,11 @@ def start_announce_thread(slackclient):
         else:
             messages.extend(settings.ANNOUNCE_MESSAGES)
 
-        _thread.start_new_thread(_run_thread, (slackclient, settings.ANNOUNCE_CRON_SCHEDULE_TIMES, channel_ids, messages,))
+        cron_schedule_times = []
+        for cron_schedule_time in settings.ANNOUNCE_CRON_SCHEDULE_TIMES:
+            if isinstance(cron_schedule_time, CronScheduleTime):
+                cron_schedule_times.append(cron_schedule_time)
+            else:
+                cron_schedule_times.append(parseCronSchedule(cron_schedule_time))
+
+        _thread.start_new_thread(_run_thread, (slackclient, cron_schedule_times, channel_ids, messages,))
