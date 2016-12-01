@@ -7,22 +7,29 @@ from six.moves import _thread
 
 import slackbot_settings as settings
 
+import slacker
+
 from log import logger
 
-def _run_thread(slackclient, schedule_times, channel_ids, messages):
+def _run_thread(slackclient, cron_schedule_times, channel_ids, messages):
     while True:
         now = datetime.datetime.now()
         logger.info('checking announce thread')
 
-        for schedule_time in schedule_times:
-            if schedule_time.dayofweek == now.weekday() and schedule_time.hour == now.hour and schedule_time.minute == now.minute:
+        for cron_schedule_time in cron_schedule_times:
+            logger.debug('checking cron-time: %s', cron_schedule_time)
+
+            if cron_schedule_time.isOn(now):
 
                 message = random.choice(messages)
 
                 logger.info('schedule time found, sending message: \'%s\'', message)
 
                 for channel_id in channel_ids:
-                    slackclient.send_message(channel_id, message)
+                    try:
+                        slackclient.send_message(channel_id, message)
+                    except slacker.Error as e:
+                        logger.error('Error sending Slack message to channel \'%s\': %s', channel_id, e)
                 break
 
         time.sleep(60)
@@ -51,4 +58,4 @@ def start_announce_thread(slackclient):
         else:
             messages.extend(settings.ANNOUNCE_MESSAGES)
 
-        _thread.start_new_thread(_run_thread, (slackclient, settings.ANNOUNCE_SCHEDULE_TIMES, channel_ids, messages,))
+        _thread.start_new_thread(_run_thread, (slackclient, settings.ANNOUNCE_CRON_SCHEDULE_TIMES, channel_ids, messages,))
