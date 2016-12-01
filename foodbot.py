@@ -5,6 +5,8 @@ import datetime
 import calendar
 import re
 
+from log import logger
+
 def _dayInterval(date=None):
     if date is None:
         date = datetime.date.today()

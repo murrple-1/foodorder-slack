@@ -7,12 +7,20 @@ from six.moves import _thread
 
 import slackbot_settings as settings
 
+from log import logger
+
 def _run_thread(slackclient, schedule_times, channel_ids, messages):
     while True:
         now = datetime.datetime.now()
+        logger.info('checking announce thread')
+
         for schedule_time in schedule_times:
             if schedule_time.dayofweek == now.weekday() and schedule_time.hour == now.hour and schedule_time.minute == now.minute:
+
                 message = random.choice(messages)
+
+                logger.info('schedule time found, sending message: \'%s\'', message)
+
                 for channel_id in channel_ids:
                     slackclient.send_message(channel_id, message)
                 break
