@@ -10,8 +10,6 @@ PLUGINS = [
 
 # Custom FoodBot settings
 
-from scheduletime import ScheduleTime
-
 ANNOUNCE_WILL_LAUNCH = True # bool: will the announce thread launch
 ANNOUNCE_CRON_SCHEDULE_TIMES = ['0 10 * * 4'] # list of cron time strings: "[minute|*] [hour|*] [day_of_month|*] [month|*] [day_of_week|*]"
 ANNOUNCE_CHANNEL_NAMES = os.environ.get('ANNOUNCE_CHANNEL_NAME') or '<announce-channel-name>' # str, or list of str: channel name, or list of channel names, all of which receive the announcement
