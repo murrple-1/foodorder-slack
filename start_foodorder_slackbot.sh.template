@@ -1,11 +1,15 @@
 #!/bin/bash
 
+cd /path/to/foodorder-slack/git/repo/
+
+if [ ! -f data.db ]; then
+	sqlite3 data.db < sqlschema.sql
+fi
+
 source /path/to/foodorder-slack/virtualenv/bin/activate
 
 export SLACKBOT_API_TOKEN='<slackbot-api-token>'
 export SLACKBOT_ERRORS_TO='<slack-username-to-send-stacktraces-to>'
 export ANNOUNCE_CHANNEL_NAME='<channel-name-to-annouce>'
 
-cd /path/to/foodorder-slack/git/repo/
 python run.py
-
