@@ -275,6 +275,36 @@ def todays_menu_respond(message):
         if conn is not None:
             conn.close()
 
+@respond_to('^:myorder$')
+def echo_order(message):
+    dayStart, dayEnd = _dayInterval()
+    conn = sqlite3.connect('data.db')
+
+    try:
+        cur = conn.cursor()
+
+        _remove_old_entries(cur, dayStart)
+
+        oldOrder = cur.execute(
+            """
+            SELECT o.`text` FROM \"orders\" AS o
+            WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end) AND o.`ordered_by` = :ordered_by
+            LIMIT 1
+            """, { 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()), 'ordered_by': message.body['user'] }
+        ).fetchone()
+
+        if oldOrder:
+            conn.commit()
+
+            message.reply('You ordered: \'{0}\''.format(oldOrder[0]))
+        else:
+            conn.commit()
+
+            message.reply('You haven\'t made an order yet today')
+    finally:
+        if conn is not None:
+            conn.close()
+
 @respond_to('^:myorder \'{0}\''.format(_slack_regex_group(_MY_ORDER_REGEX)))
 def set_order(message, order):
     dayStart, dayEnd = _dayInterval()
@@ -402,6 +432,7 @@ List of available commands:
 \u2022 `:todaysmenu` get today's menu
 \u2022 `:todaysorders` get today\'s orders
 \u2022 `:myorder '[YOUR ORDER]'` set your order for the day
+\u2022 `:myorder` echo your order back to you
 \u2022 `:clearmyorder` unset your order for the day
 \u2022 `:addtodaysmenu '[MENU NAME]' '[MENU URL]'` add a menu to today's menu
 \u2022 `:removetodaysmenu '[MENU NAME]'` remove a menu from today's menu
