@@ -15,22 +15,22 @@ def _dayInterval(date=None):
     end = datetime.datetime(date.year, date.month, date.day, 23, 59, 59, 999999)
     return start, end
 
-_MENU_NAME_REGEX = '[A-Za-z0-9 !\\.\\-\\\'&]+'
+_MENU_NAME_REGEX = r'[^\f\r\n\v\']+'
 _MENU_URL_REGEX = (
     # protocol identifier
-    "(?:https?://)"
+    r'(?:https?:/)'
     # host name
-    "(?:(?:[a-z0-9]-?)*[a-z0-9]+)"
+    r'(?:(?:[a-z0-9]-?)*[a-z0-9]+)'
     # domain name
-    "(?:\.(?:[a-z0-9]-?)*[a-z0-9]+)*"
+    r'(?:\.(?:[a-z0-9]-?)*[a-z0-9]+)*'
     # TLD identifier
-    "(?:\.(?:[a-z]{2,}))"
+    r'(?:\.(?:[a-z]{2,}))'
     # port number
-    "(?::\d{2,5})?"
+    r'(?::\d{2,5})?'
     # resource path
-    "(?:/\\S*)?"
+    r'(?:/\s*)?'
 )
-_MY_ORDER_REGEX = '[A-Za-z0-9 #]+'
+_MY_ORDER_REGEX = r'[^\f\r\n\v\']+'
 
 def _slack_regex_group(regex):
     return '({0})'.format(regex)
