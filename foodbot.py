@@ -1,8 +1,8 @@
-from slackbot.bot import respond_to, default_reply
-
 import sqlite3
 import datetime
 import calendar
+
+from slackbot.bot import respond_to, default_reply
 
 def _dayInterval(date=None):
     if date is None:
