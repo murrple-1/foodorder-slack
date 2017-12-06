@@ -1,11 +1,8 @@
-from slackbot.bot import respond_to, listen_to, default_reply
+from slackbot.bot import respond_to, default_reply
 
 import sqlite3
 import datetime
 import calendar
-import re
-
-from log import logger
 
 def _dayInterval(date=None):
     if date is None:
@@ -53,7 +50,7 @@ def _remove_old_entries(cur, dayStart):
         """, { 'day_start': calendar.timegm(dayStart.utctimetuple()) }
     )
 
-@respond_to('^:addtodaysmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
+@respond_to(r'^:addtodaysmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
 def add_today_menu(message, menu_name, menu_url):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -98,7 +95,7 @@ def add_today_menu(message, menu_name, menu_url):
         if conn is not None:
             conn.close()
 
-@respond_to('^:removetodaysmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
+@respond_to(r'^:removetodaysmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
 def remove_today_menu(message, menu_name):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -133,7 +130,7 @@ def remove_today_menu(message, menu_name):
         if conn is not None:
             conn.close()
 
-@respond_to('^:adddefaultmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
+@respond_to(r'^:adddefaultmenu \'{0}\' \'{1}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX), _slack_url_regex_group(_MENU_URL_REGEX)))
 def add_default_menu(message, menu_name, menu_url):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -178,7 +175,7 @@ def add_default_menu(message, menu_name, menu_url):
         if conn is not None:
             conn.close()
 
-@respond_to('^:removedefaultmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
+@respond_to(r'^:removedefaultmenu \'{0}\'$'.format(_slack_regex_group(_MENU_NAME_REGEX)))
 def remove_default_menu(message, menu_name):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -213,7 +210,7 @@ def remove_default_menu(message, menu_name):
         if conn is not None:
             conn.close()
 
-@respond_to('^:resettodaysmenu$')
+@respond_to(r'^:resettodaysmenu$')
 def reset_todays_menu(message):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -237,7 +234,7 @@ def reset_todays_menu(message):
         if conn is not None:
             conn.close()
 
-@respond_to('^:todaysmenu$')
+@respond_to(r'^:todaysmenu$')
 def todays_menu_respond(message):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -275,7 +272,7 @@ def todays_menu_respond(message):
         if conn is not None:
             conn.close()
 
-@respond_to('^:myorder$')
+@respond_to(r'^:myorder$')
 def echo_order(message):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -305,7 +302,7 @@ def echo_order(message):
         if conn is not None:
             conn.close()
 
-@respond_to('^:myorder \'{0}\''.format(_slack_regex_group(_MY_ORDER_REGEX)))
+@respond_to(r'^:myorder \'{0}\''.format(_slack_regex_group(_MY_ORDER_REGEX)))
 def set_order(message, order):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -350,7 +347,7 @@ def set_order(message, order):
         if conn is not None:
             conn.close()
 
-@respond_to('^:clearmyorder$')
+@respond_to(r'^:clearmyorder$')
 def clear_order(message):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -385,7 +382,7 @@ def clear_order(message):
         if conn is not None:
             conn.close()
 
-@respond_to('^:todaysorders$')
+@respond_to(r'^:todaysorders$')
 def todays_orders(message):
     dayStart, dayEnd = _dayInterval()
     conn = sqlite3.connect('data.db')
@@ -423,7 +420,7 @@ def todays_orders(message):
         if conn is not None:
             conn.close()
 
-@respond_to('^:help$')
+@respond_to(r'^:help$')
 def help(message):
     helpText = u"""
 List of available commands:

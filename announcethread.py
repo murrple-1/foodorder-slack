@@ -1,6 +1,5 @@
 import time
 import datetime
-import collections
 import random
 
 from six.moves import _thread
