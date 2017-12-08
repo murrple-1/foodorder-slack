@@ -14,22 +14,22 @@ from cron import CronScheduleTime, parseCronSchedule
 def _run_thread(slackclient, cron_schedule_times, channel_ids, messages):
     while True:
         now = datetime.datetime.now()
-        logger.info('checking announce thread')
+        logger().info('checking announce thread')
 
         for cron_schedule_time in cron_schedule_times:
-            logger.debug('checking cron-time: %s', cron_schedule_time)
+            logger().debug('checking cron-time: %s', cron_schedule_time)
 
             if cron_schedule_time.isOn(now):
 
                 message = random.choice(messages)
 
-                logger.info('schedule time found, sending message: \'%s\'', message)
+                logger().info('schedule time found, sending message: \'%s\'', message)
 
                 for channel_id in channel_ids:
                     try:
                         slackclient.send_message(channel_id, message)
                     except slacker.Error as e:
-                        logger.error('Error sending Slack message to channel \'%s\': %s', channel_id, e)
+                        logger().error('Error sending Slack message to channel \'%s\': %s', channel_id, e)
                 break
 
         time.sleep(60)
