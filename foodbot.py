@@ -261,9 +261,9 @@ def todays_menu_respond(message):
         if len(menus) > 0:
             replyLines = []
             for menu in menus:
-                replyLines.append(u'\u2022 {0} - {1}'.format(menu[0], menu[1]))
+                replyLines.append('\u2022 {0} - {1}'.format(menu[0], menu[1]))
 
-            reply = u'\n'.join(replyLines)
+            reply = '\n'.join(replyLines)
 
             message.reply(reply)
         else:
@@ -409,9 +409,9 @@ def todays_orders(message):
             replyLines = []
             for todaysOrder in todaysOrders:
                 username = _userid_to_username(todaysOrder[0], message._client)
-                replyLines.append(u'\u2022 @{0} - {1}'.format(username, todaysOrder[1]))
+                replyLines.append('\u2022 @{0} - {1}'.format(username, todaysOrder[1]))
 
-            reply = u'\n'.join(replyLines)
+            reply = '\n'.join(replyLines)
 
             message.reply(reply)
         else:
@@ -422,7 +422,7 @@ def todays_orders(message):
 
 @respond_to(r'^:help$')
 def help(message):
-    helpText = u"""
+    helpText = """
 List of available commands:
 
 \u2022 `:help` print this help message

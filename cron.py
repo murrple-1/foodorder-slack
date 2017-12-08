@@ -1,11 +1,11 @@
 import re
 
 class CronScheduleTime:
-    MIN_RANGE = range(0, 60)
-    HOUR_RANGE = range(0, 24)
-    DAY_OF_MONTH_RANGE = range(1, 32)
-    MONTH_RANGE = range(1, 13)
-    DAY_OF_WEEK_RANGE = range(0, 7)
+    MIN_RANGE = list(range(0, 60))
+    HOUR_RANGE = list(range(0, 24))
+    DAY_OF_MONTH_RANGE = list(range(1, 32))
+    MONTH_RANGE = list(range(1, 13))
+    DAY_OF_WEEK_RANGE = list(range(0, 7))
 
     def __init__(self, minute, hour, day_of_month, month, day_of_week):
         if minute is not None and minute not in self.MIN_RANGE:

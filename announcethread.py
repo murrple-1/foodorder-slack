@@ -38,7 +38,7 @@ def start_announce_thread(slackclient):
     willAnnounce = getattr(settings, 'ANNOUNCE_WILL_LAUNCH', False)
     if willAnnounce:
         channel_ids = []
-        if isinstance(settings.ANNOUNCE_CHANNEL_NAMES, basestring):
+        if isinstance(settings.ANNOUNCE_CHANNEL_NAMES, str):
             channel_id = slackclient.find_channel_by_name(settings.ANNOUNCE_CHANNEL_NAMES)
             if not channel_id:
                 raise RuntimeError('channel id not found for \'{}\''.format(settings.ANNOUNCE_CHANNEL_NAMES))
@@ -53,7 +53,7 @@ def start_announce_thread(slackclient):
                 channel_ids.append(channel_id)
 
         messages = []
-        if isinstance(settings.ANNOUNCE_MESSAGES, basestring):
+        if isinstance(settings.ANNOUNCE_MESSAGES, str):
             messages.append(settings.ANNOUNCE_MESSAGES)
         else:
             messages.extend(settings.ANNOUNCE_MESSAGES)
