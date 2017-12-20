@@ -6,7 +6,7 @@ if [ ! -f data.db ]; then
 	sqlite3 data.db < sqlschema.sql
 fi
 
-source /path/to/foodorder-slack/virtualenv/bin/activate
+source `pipenv --venv`/bin/activate
 
 export SLACKBOT_API_TOKEN='<slackbot-api-token>'
 export SLACKBOT_ERRORS_TO='<slack-username-to-send-stacktraces-to>'
