@@ -6,10 +6,11 @@ if [ ! -f data.db ]; then
 	sqlite3 data.db < sqlschema.sql
 fi
 
-source `pipenv --venv`/bin/activate
+# path to virtualenv can be determined with `pipenv --venv`
+source /path/to/virtualenv/bin/activate
 
 export SLACKBOT_API_TOKEN='<slackbot-api-token>'
 export SLACKBOT_ERRORS_TO='<slack-username-to-send-stacktraces-to>'
 export ANNOUNCE_CHANNEL_NAME='<channel-name-to-annouce>'
 
-python run.py
+python foodorder-slackbot/run.py
