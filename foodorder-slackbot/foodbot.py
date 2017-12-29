@@ -399,9 +399,7 @@ def todays_orders(message):
         ).fetchall()
 
         def _userid_to_username(userid, slackclient):
-            from six import iteritems
-
-            for _userid, user in iteritems(slackclient.users):
+            for _userid, user in slackclient.users.items():
                 if userid == _userid:
                     return user['name']
 

@@ -1,8 +1,7 @@
 import time
 import datetime
 import random
-
-from six.moves import _thread
+import threading
 
 import slackbot_settings as settings
 
@@ -65,4 +64,5 @@ def start_announce_thread(slackclient):
             else:
                 cron_schedule_times.append(parseCronSchedule(cron_schedule_time))
 
-        _thread.start_new_thread(_run_thread, (slackclient, cron_schedule_times, channel_ids, messages,))
+        thread = threading.Thread(target=_run_thread, args=(slackclient, cron_schedule_times, channel_ids, messages,))
+        thread.start()
