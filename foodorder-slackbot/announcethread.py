@@ -64,5 +64,5 @@ def start_announce_thread(slackclient):
             else:
                 cron_schedule_times.append(parseCronSchedule(cron_schedule_time))
 
-        thread = threading.Thread(target=_run_thread, args=(slackclient, cron_schedule_times, channel_ids, messages,))
+        thread = threading.Thread(target=_run_thread, args=(slackclient, cron_schedule_times, channel_ids, messages,), daemon=True)
         thread.start()
