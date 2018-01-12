@@ -5,7 +5,7 @@ import calendar
 from slackbot.bot import respond_to, default_reply
 
 
-def _dayInterval(date=None):
+def _day_interval(date=None):
     if date is None:
         date = datetime.date.today()
 
@@ -47,19 +47,19 @@ def _slack_url_regex_group(url_regex):
     return '<({0})>'.format(url_regex)
 
 
-def _remove_old_entries(cur, dayStart):
+def _remove_old_entries(cur, day_start):
     cur.execute(
         """
         DELETE FROM \"daily_menus\"
         WHERE `date` < :day_start
-        """, {'day_start': calendar.timegm(dayStart.utctimetuple())}
+        """, {'day_start': calendar.timegm(day_start.utctimetuple())}
     )
 
     cur.execute(
         """
         DELETE FROM \"orders\"
         WHERE `ordered_at` < :day_start
-        """, {'day_start': calendar.timegm(dayStart.utctimetuple())}
+        """, {'day_start': calendar.timegm(day_start.utctimetuple())}
     )
 
 
@@ -68,20 +68,20 @@ def _remove_old_entries(cur, dayStart):
         _slack_regex_group(_MENU_NAME_REGEX),
         _slack_url_regex_group(_MENU_URL_REGEX)))
 def add_today_menu(message, menu_name, menu_url):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
         exists = cur.execute(
             """
             SELECT dlm.`id` FROM \"daily_menus\" AS dlm
             WHERE dlm.`name` = :menu_name AND (dlm.`date` >= :day_start AND dlm.`date` <= :day_end)
             LIMIT 1
-            """, {'menu_name': menu_name, 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple())}
+            """, {'menu_name': menu_name, 'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple())}
         ).fetchone()
 
         if exists:
@@ -115,20 +115,20 @@ def add_today_menu(message, menu_name, menu_url):
 @respond_to(r'^:removetodaysmenu \'{0}\'$'.format(
     _slack_regex_group(_MENU_NAME_REGEX)))
 def remove_today_menu(message, menu_name):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
         exists = cur.execute(
             """
             SELECT dlm.`id` FROM \"daily_menus\" AS dlm
             WHERE dlm.`name` = :menu_name AND (dlm.`date` >= :day_start AND dlm.`date` <= :day_end)
             LIMIT 1
-            """, {'menu_name': menu_name, 'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple())}
+            """, {'menu_name': menu_name, 'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple())}
         ).fetchone()
 
         if exists:
@@ -154,13 +154,13 @@ def remove_today_menu(message, menu_name):
         _slack_regex_group(_MENU_NAME_REGEX),
         _slack_url_regex_group(_MENU_URL_REGEX)))
 def add_default_menu(message, menu_name, menu_url):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
         exists = cur.execute(
             """
@@ -201,13 +201,13 @@ def add_default_menu(message, menu_name, menu_url):
 @respond_to(r'^:removedefaultmenu \'{0}\'$'.format(
     _slack_regex_group(_MENU_NAME_REGEX)))
 def remove_default_menu(message, menu_name):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
         exists = cur.execute(
             """
@@ -237,19 +237,19 @@ def remove_default_menu(message, menu_name):
 
 @respond_to(r'^:resettodaysmenu$')
 def reset_todays_menu(message):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
         cur.execute(
             """
             DELETE FROM \"daily_menus\"
             WHERE dlm.`date` >= :day_start AND dlm.`date` <= :day_end
-            """, {'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple())}
+            """, {'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple())}
         )
 
         conn.commit()
@@ -262,7 +262,7 @@ def reset_todays_menu(message):
 
 @respond_to(r'^:todaysmenu$')
 def todays_menu_respond(message):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
@@ -274,7 +274,7 @@ def todays_menu_respond(message):
             """
             SELECT dlm.`name`, dlm.`url` FROM \"daily_menus\" AS dlm
             WHERE dlm.`date` >= :day_start AND dlm.`date` <= :day_end
-            """, {'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple())}
+            """, {'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple())}
         ).fetchall()
 
         if len(menus) < 1:
@@ -285,11 +285,11 @@ def todays_menu_respond(message):
             ).fetchall()
 
         if len(menus) > 0:
-            replyLines = []
+            reply_lines = []
             for menu in menus:
-                replyLines.append('\u2022 {0} - {1}'.format(menu[0], menu[1]))
+                reply_lines.append('\u2022 {0} - {1}'.format(menu[0], menu[1]))
 
-            reply = '\n'.join(replyLines)
+            reply = '\n'.join(reply_lines)
 
             message.reply(reply)
         else:
@@ -301,26 +301,26 @@ def todays_menu_respond(message):
 
 @respond_to(r'^:myorder$')
 def echo_order(message):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
-        oldOrder = cur.execute(
+        old_order = cur.execute(
             """
             SELECT o.`text` FROM \"orders\" AS o
             WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end) AND o.`ordered_by` = :ordered_by
             LIMIT 1
-            """, {'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()), 'ordered_by': message.body['user']}
+            """, {'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple()), 'ordered_by': message.body['user']}
         ).fetchone()
 
-        if oldOrder:
+        if old_order:
             conn.commit()
 
-            message.reply('You ordered: \'{0}\''.format(oldOrder[0]))
+            message.reply('You ordered: \'{0}\''.format(old_order[0]))
         else:
             conn.commit()
 
@@ -332,29 +332,29 @@ def echo_order(message):
 
 @respond_to(r'^:myorder \'{0}\''.format(_slack_regex_group(_MY_ORDER_REGEX)))
 def set_order(message, order):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
-        oldOrder = cur.execute(
+        old_order = cur.execute(
             """
             SELECT o.`id` FROM \"orders\" AS o
             WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end) AND o.`ordered_by` = :ordered_by
             LIMIT 1
-            """, {'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()), 'ordered_by': message.body['user']}
+            """, {'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple()), 'ordered_by': message.body['user']}
         ).fetchone()
 
-        if oldOrder:
+        if old_order:
             cur.execute(
                 """
                 UPDATE \"orders\"
                 SET `text` = :text
                 WHERE `id` = :id
-                """, {'text': order, 'id': oldOrder[0]}
+                """, {'text': order, 'id': old_order[0]}
             )
 
             conn.commit()
@@ -378,28 +378,28 @@ def set_order(message, order):
 
 @respond_to(r'^:clearmyorder$')
 def clear_order(message):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        _remove_old_entries(cur, dayStart)
+        _remove_old_entries(cur, day_start)
 
-        oldOrder = cur.execute(
+        old_order = cur.execute(
             """
             SELECT o.`id` FROM \"orders\" AS o
             WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end) AND o.`ordered_by` = :ordered_by
             LIMIT 1
-            """, {'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple()), 'ordered_by': message.body['user']}
+            """, {'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple()), 'ordered_by': message.body['user']}
         ).fetchone()
 
-        if oldOrder:
+        if old_order:
             cur.execute(
                 """
                 DELETE FROM \"orders\"
                 WHERE `id` = :id
-                """, {'id': oldOrder[0]}
+                """, {'id': old_order[0]}
             )
 
             conn.commit()
@@ -414,18 +414,18 @@ def clear_order(message):
 
 @respond_to(r'^:todaysorders$')
 def todays_orders(message):
-    dayStart, dayEnd = _dayInterval()
+    day_start, day_end = _day_interval()
     conn = sqlite3.connect('data.db')
 
     try:
         cur = conn.cursor()
 
-        todaysOrders = cur.execute(
+        todays_orders = cur.execute(
             """
             SELECT o.`ordered_by`, o.`text`
             FROM \"orders\" AS o
             WHERE (o.`ordered_at` >= :day_start AND o.`ordered_at` <= :day_end)
-            """, {'day_start': calendar.timegm(dayStart.utctimetuple()), 'day_end': calendar.timegm(dayEnd.utctimetuple())}
+            """, {'day_start': calendar.timegm(day_start.utctimetuple()), 'day_end': calendar.timegm(day_end.utctimetuple())}
         ).fetchall()
 
         def _userid_to_username(userid, slackclient):
@@ -433,14 +433,14 @@ def todays_orders(message):
                 if userid == _userid:
                     return user['name']
 
-        if len(todaysOrders) > 0:
-            replyLines = []
-            for todaysOrder in todaysOrders:
+        if len(todays_orders) > 0:
+            reply_lines = []
+            for todaysOrder in todays_orders:
                 username = _userid_to_username(todaysOrder[0], message._client)
-                replyLines.append(
+                reply_lines.append(
                     '\u2022 @{0} - {1}'.format(username, todaysOrder[1]))
 
-            reply = '\n'.join(replyLines)
+            reply = '\n'.join(reply_lines)
 
             message.reply(reply)
         else:
@@ -452,7 +452,7 @@ def todays_orders(message):
 
 @respond_to(r'^:help$')
 def help(message):
-    helpText = """
+    help_text = """
 List of available commands:
 
 \u2022 `:help` print this help message
@@ -467,7 +467,7 @@ List of available commands:
 \u2022 `:adddefaultmenu '[MENU NAME]' '[MENU URL]'` add a menu to the default menu
 \u2022 `:removedefaultmenu '[MENU NAME]'` remove a menu from the default menu
 """
-    message.reply(helpText)
+    message.reply(help_text)
 
 
 @default_reply()

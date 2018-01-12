@@ -43,7 +43,7 @@ class CronScheduleTime:
         return '{0} {1} {2} {3} {4}'.format(
             minute, hour, day_of_month, month, day_of_week)
 
-    def isOn(self, dt):
+    def is_on(self, dt):
         date = dt.date()
         time = dt.time()
 
@@ -73,22 +73,22 @@ class CronScheduleTime:
 _prog = None
 
 
-def parseCronSchedule(cronSchedule):
+def parse_cron_schedule(cron_schedule):
     global _prog
     if not _prog:
         _prog = re.compile(
             r'^(\*|\d{1,2}) (\*|\d{1,2}) (\*|\d{1,2}) (\*|\d{1,2}) (\*|\d)$')
 
-    matchObj = _prog.match(cronSchedule)
+    match = _prog.match(cron_schedule)
 
-    if not matchObj:
+    if not match:
         raise ValueError('malformed cron schedule text')
 
-    minute = matchObj.group(1)
-    hour = matchObj.group(2)
-    day_of_month = matchObj.group(3)
-    month = matchObj.group(4)
-    day_of_week = matchObj.group(5)
+    minute = match.group(1)
+    hour = match.group(2)
+    day_of_month = match.group(3)
+    month = match.group(4)
+    day_of_week = match.group(5)
 
     if minute == '*':
         minute = None
