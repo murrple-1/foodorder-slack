@@ -1,5 +1,6 @@
 import re
 
+
 class CronScheduleTime:
     MIN_RANGE = list(range(0, 60))
     HOUR_RANGE = list(range(0, 24))
@@ -39,7 +40,8 @@ class CronScheduleTime:
         month = self.month if self.month is not None else '*'
         day_of_week = self.day_of_week if self.day_of_week is not None else '*'
 
-        return '{0} {1} {2} {3} {4}'.format(minute, hour, day_of_month, month, day_of_week)
+        return '{0} {1} {2} {3} {4}'.format(
+            minute, hour, day_of_month, month, day_of_week)
 
     def isOn(self, dt):
         date = dt.date()
@@ -67,11 +69,15 @@ class CronScheduleTime:
 
         return True
 
+
 _prog = None
+
+
 def parseCronSchedule(cronSchedule):
     global _prog
     if not _prog:
-        _prog = re.compile(r'^(\*|\d{1,2}) (\*|\d{1,2}) (\*|\d{1,2}) (\*|\d{1,2}) (\*|\d)$')
+        _prog = re.compile(
+            r'^(\*|\d{1,2}) (\*|\d{1,2}) (\*|\d{1,2}) (\*|\d{1,2}) (\*|\d)$')
 
     matchObj = _prog.match(cronSchedule)
 

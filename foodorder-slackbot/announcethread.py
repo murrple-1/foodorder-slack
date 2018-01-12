@@ -10,6 +10,7 @@ import slacker
 from log import logger
 from cron import CronScheduleTime, parseCronSchedule
 
+
 def _run_thread(slackclient, cron_schedule_times, channel_ids, messages):
     while True:
         now = datetime.datetime.now()
@@ -33,21 +34,26 @@ def _run_thread(slackclient, cron_schedule_times, channel_ids, messages):
 
         time.sleep(60)
 
+
 def start_announce_thread(slackclient):
     willAnnounce = getattr(settings, 'ANNOUNCE_WILL_LAUNCH', False)
     if willAnnounce:
         channel_ids = []
         if isinstance(settings.ANNOUNCE_CHANNEL_NAMES, str):
-            channel_id = slackclient.find_channel_by_name(settings.ANNOUNCE_CHANNEL_NAMES)
+            channel_id = slackclient.find_channel_by_name(
+                settings.ANNOUNCE_CHANNEL_NAMES)
             if not channel_id:
-                raise RuntimeError('channel id not found for \'{}\''.format(settings.ANNOUNCE_CHANNEL_NAMES))
+                raise RuntimeError(
+                    'channel id not found for \'{}\''.format(
+                        settings.ANNOUNCE_CHANNEL_NAMES))
 
             channel_ids.append(channel_id)
         else:
             for channelName in settings.ANNOUNCE_CHANNEL_NAMES:
                 channel_id = slackclient.find_channel_by_name(channelName)
                 if not channel_id:
-                    raise RuntimeError('channel id not found for \'{}\''.format(channelName))
+                    raise RuntimeError(
+                        'channel id not found for \'{}\''.format(channelName))
 
                 channel_ids.append(channel_id)
 
@@ -62,7 +68,16 @@ def start_announce_thread(slackclient):
             if isinstance(cron_schedule_time, CronScheduleTime):
                 cron_schedule_times.append(cron_schedule_time)
             else:
-                cron_schedule_times.append(parseCronSchedule(cron_schedule_time))
+                cron_schedule_times.append(
+                    parseCronSchedule(cron_schedule_time))
 
-        thread = threading.Thread(target=_run_thread, args=(slackclient, cron_schedule_times, channel_ids, messages,), daemon=True)
+        thread = threading.Thread(
+            target=_run_thread,
+            args=(
+                slackclient,
+                cron_schedule_times,
+                channel_ids,
+                messages,
+            ),
+            daemon=True)
         thread.start()
