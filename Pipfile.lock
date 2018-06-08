@@ -51,11 +51,11 @@
         },
         "slackbot": {
             "hashes": [
-                "sha256:90305f93ffc395cae50c1104477c92e2ce4bf5cfd2fb4012f2324fc7b49ee0de",
-                "sha256:b8591c5d65facd726b6f02dfb4d42cda82edbd05827e38a030fa0812ef61a8c0"
+                "sha256:4ebf837e598f6c6fd98a6c9d86783f10ee7e2fe18bc1463c4799ff3d25ecb334",
+                "sha256:6d15889ab96e87a1d43f31c8e59752e3d3cb5f4669013092a49617f19b165b60"
             ],
             "index": "pypi",
-            "version": "==0.5.2"
+            "version": "==0.5.3"
         },
         "slacker": {
             "hashes": [
