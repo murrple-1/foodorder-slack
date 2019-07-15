@@ -1,17 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
-cd /path/to/foodorder-slack/git/repo/
+cd /path/to/foodorder-slack/git/repo/ || exit
 
 if [ ! -f data.db ]; then
 	sqlite3 data.db < sqlschema.sql
 fi
 
-# path to virtualenv can be determined with `pipenv --venv`
-source /path/to/virtualenv/bin/activate
-
 export SLACKBOT_API_TOKEN='<slackbot-api-token>'
 export SLACKBOT_ERRORS_TO='<slack-username-to-send-stacktraces-to>'
 export ANNOUNCE_CHANNEL_NAME='<channel-name-to-annouce>'
 
-python foodorder-slackbot/run.py
-
+pipenv run python foodorder-slackbot/run.py
